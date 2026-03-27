@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mcp-metar": {
+      "command": "mcp-metar",
+      "env": {}
+    }
+  }
+}
