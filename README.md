@@ -4,7 +4,10 @@
 
 [![PyPI](https://img.shields.io/pypi/v/mcp-metar.svg)](https://pypi.org/project/mcp-metar/)
 [![Python](https://img.shields.io/pypi/pyversions/mcp-metar.svg)](https://pypi.org/project/mcp-metar/)
+[![Coverage](https://codecov.io/gh/daedalus/mcp-metar/branch/main/graph/badge.svg)](https://codecov.io/gh/daedalus/mcp-metar)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+mcp-name: io.github.daedalus/mcp-metar
 
 ## Install
 

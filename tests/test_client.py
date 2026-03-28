@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mcp_metar._client import (
+from mcp_metar.core.models import (
     _validate_icao_code,
     get_airport_weather,
     get_metar,

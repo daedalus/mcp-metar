@@ -7,7 +7,7 @@ import pytest
 @pytest.fixture
 def mock_requests_get() -> Generator[MagicMock, None, None]:
     """Fixture to mock requests.get."""
-    with patch("mcp_metar._client.requests.get") as mock_get:
+    with patch("mcp_metar.adapters.http.requests.get") as mock_get:
         yield mock_get
 
 

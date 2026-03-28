@@ -1,12 +1,18 @@
-"""Client for fetching METAR and TAF weather data from NOAA."""
+"""Core domain models and functions for METAR/TAF data."""
 
 import re
-
-import requests
+from typing import TypedDict
 
 METAR_URL = "https://aviationweather.gov/api/data/metar"
 TAF_URL = "https://aviationweather.gov/api/data/taf"
 TIMEOUT = 10
+
+
+class WeatherData(TypedDict):
+    """Weather data dictionary with METAR and TAF."""
+
+    metar: str
+    taf: str
 
 
 def _validate_icao_code(icao_code: str) -> None:
@@ -17,6 +23,7 @@ def _validate_icao_code(icao_code: str) -> None:
 
     Raises:
         ValueError: If code is invalid.
+        TypeError: If icao_code is not a string.
     """
     if not isinstance(icao_code, str):
         raise TypeError("icao_code must be a string")
@@ -25,39 +32,6 @@ def _validate_icao_code(icao_code: str) -> None:
         raise ValueError(f"Invalid ICAO code '{icao_code}': must be 4 characters")
     if not re.match(r"^[A-Z]{4}$", icao_code):
         raise ValueError(f"Invalid ICAO code '{icao_code}': must contain only letters")
-
-
-def _fetch_data(url: str, icao_code: str) -> str:
-    """Fetch data from NOAA API.
-
-    Args:
-        url: API endpoint URL.
-        icao_code: ICAO airport code.
-
-    Returns:
-        Raw response data or error message.
-
-    Raises:
-        RuntimeError: On network failure.
-    """
-    icao_code = icao_code.strip().upper()
-    params = {"ids": icao_code}
-
-    try:
-        response = requests.get(url, params=params, timeout=TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-
-        if data and isinstance(data, list) and len(data) > 0:
-            return data[0].get("rawOb", "No data available")
-        return "No METAR/TAF available"
-
-    except requests.Timeout:
-        raise RuntimeError("Request timed out")
-    except requests.RequestException as e:
-        raise RuntimeError(f"Request failed: {e}")
-    except ValueError:
-        return "No data available"
 
 
 def get_metar(icao_code: str) -> str:
@@ -80,8 +54,10 @@ def get_metar(icao_code: str) -> str:
         >>> get_metar("KJFK")
         'KJFK 261953Z 04018KT 10SM FEW040 BKN250 04/M02 A3008 RMK AO2 SLP268 T00441022'
     """
+    from mcp_metar.adapters.http import fetch_metar
+
     _validate_icao_code(icao_code)
-    return _fetch_data(METAR_URL, icao_code)
+    return fetch_metar(icao_code)
 
 
 def get_taf(icao_code: str) -> str:
@@ -104,11 +80,13 @@ def get_taf(icao_code: str) -> str:
         >>> get_taf("KJFK")
         'KJFK 261600Z 2618/2718 04015G25KT P6SM BKN040 OVC100'
     """
+    from mcp_metar.adapters.http import fetch_taf
+
     _validate_icao_code(icao_code)
-    return _fetch_data(TAF_URL, icao_code)
+    return fetch_taf(icao_code)
 
 
-def get_airport_weather(icao_code: str) -> dict[str, str]:
+def get_airport_weather(icao_code: str) -> WeatherData:
     """Fetch both METAR and TAF for a given airport.
 
     Convenience function that retrieves both current METAR and forecast TAF
@@ -118,7 +96,7 @@ def get_airport_weather(icao_code: str) -> dict[str, str]:
         icao_code: 4-letter ICAO airport code (e.g., "KJFK", "EGLL", "LFPG").
 
     Returns:
-        dict: Dictionary with "metar" and "taf" keys containing respective data.
+        WeatherData: Dictionary with "metar" and "taf" keys containing respective data.
 
     Raises:
         ValueError: If icao_code is invalid (not 4 letters).
